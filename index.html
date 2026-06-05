@@ -795,6 +795,7 @@
       padding: 40px 0 0;
       height: 132px;
       width: calc(100% - 200px);
+      background: #000;             /* 헤더 배경 검정 */
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -894,17 +895,28 @@
       justify-content: center;
       position: relative;
     }
-    .product-album img {
+    /* 이미지 래퍼: 실제 이미지 크기로 줄어들어 SET 뱃지를 이미지에 고정
+       (앨범 영역이 길어져도 뱃지가 빈 공간에 둥둥 뜨지 않음) */
+    .album-frame {
+      position: relative;
+      display: inline-block;
+      line-height: 0;
+      max-height: 100%;
+    }
+    .album-frame img {
+      display: block;
+      width: 123px;
       max-width: 100%;
+      height: auto;
       max-height: 100%;
       object-fit: contain;
     }
 
-    /* SET 뱃지 (앨범 우하단 오버레이) */
+    /* SET 뱃지 (앨범 이미지 우하단에 고정) */
     .album-set-badge {
       position: absolute;
-      right: 6px;
-      bottom: 2px;
+      right: 4px;
+      bottom: 4px;
       background: var(--green);
       border: 1px solid var(--black);
       font-family: var(--font-display);
@@ -1263,6 +1275,8 @@
       .lineup-list {
         display: grid;
         grid-template-columns: 1fr 1fr;
+        gap: 2px;                       /* 칸 사이 2px 검정 구분선 → 양 컬럼 썸네일 크기 완전 동일 */
+        background: var(--black);
         border: none;
         border-top: 2px solid var(--black);
         width: 100%;
@@ -1274,15 +1288,9 @@
       .lineup-card {
         flex: none;
         min-width: 0;
-        /* 실제 border로 그려 썸네일 위에서도 divider가 보이도록 */
-        border-right: 2px solid var(--black);
-        border-bottom: 2px solid var(--black);
+        border: none;                   /* divider는 grid gap이 담당(테두리가 폭을 깎지 않음) */
+        background: var(--white);
       }
-
-      /* 오른쪽 컬럼: divider 없음 */
-      .lineup-card:nth-child(2n) { border-right: none; }
-      /* 마지막 두 카드: 하단 border 없음 */
-      .lineup-card:nth-child(n+7) { border-bottom: none; }
 
       /* 이미지: 컬럼 가로 width 전체를 정사각형으로 */
       .lineup-img-wrap {
@@ -1805,7 +1813,7 @@
         <div class="compare-product-side">
           <div class="compare-product-img is-random">
             <span class="product-num">01</span>
-            <div class="product-album"><img src="promo-images/adz.png" alt="A / DIARY / Z VER."></div>
+            <div class="product-album"><span class="album-frame"><img src="promo-images/adz.png" alt="A / DIARY / Z VER."></span></div>
             <div class="product-meta">
               <div class="product-ver">A / DIARY / Z VER.</div>
               <div class="product-edition">RANDOM</div>
@@ -1828,7 +1836,7 @@
         <div class="compare-product-side">
           <div class="compare-product-img">
             <span class="product-num">02</span>
-            <div class="product-album"><img src="promo-images/adz.png" alt="A / DIARY / Z VER."><span class="album-set-badge">SET</span></div>
+            <div class="product-album"><span class="album-frame"><img src="promo-images/adz.png" alt="A / DIARY / Z VER."><span class="album-set-badge">SET</span></span></div>
             <div class="product-meta">
               <div class="product-ver">A / DIARY / Z VER.</div>
               <div class="product-edition">SET</div>
@@ -1852,7 +1860,7 @@
         <div class="compare-product-side">
           <div class="compare-product-img is-random">
             <span class="product-num">03</span>
-            <div class="product-album"><img src="promo-images/digipack.png" alt="DIGIPACK VER."></div>
+            <div class="product-album"><span class="album-frame"><img src="promo-images/digipack.png" alt="DIGIPACK VER."></span></div>
             <div class="product-meta">
               <div class="product-ver">DIGIPACK VER.</div>
               <div class="product-edition">RANDOM</div>
@@ -1874,7 +1882,7 @@
         <div class="compare-product-side">
           <div class="compare-product-img">
             <span class="product-num">04</span>
-            <div class="product-album"><img src="promo-images/digipack.png" alt="DIGIPACK VER."><span class="album-set-badge">SET</span></div>
+            <div class="product-album"><span class="album-frame"><img src="promo-images/digipack.png" alt="DIGIPACK VER."><span class="album-set-badge">SET</span></span></div>
             <div class="product-meta">
               <div class="product-ver">DIGIPACK VER.</div>
               <div class="product-edition">SET</div>
@@ -1893,7 +1901,7 @@
         <div class="compare-product-side">
           <div class="compare-product-img is-random">
             <span class="product-num">05</span>
-            <div class="product-album"><img src="promo-images/pocaalbum.png" alt="POCAALBUM"></div>
+            <div class="product-album"><span class="album-frame"><img src="promo-images/pocaalbum.png" alt="POCAALBUM"></span></div>
             <div class="product-meta">
               <div class="product-ver">POCAALBUM</div>
               <div class="product-edition">RANDOM</div>
@@ -1912,7 +1920,7 @@
         <div class="compare-product-side">
           <div class="compare-product-img">
             <span class="product-num">06</span>
-            <div class="product-album"><img src="promo-images/pocaalbum.png" alt="POCAALBUM"><span class="album-set-badge">SET</span></div>
+            <div class="product-album"><span class="album-frame"><img src="promo-images/pocaalbum.png" alt="POCAALBUM"><span class="album-set-badge">SET</span></span></div>
             <div class="product-meta">
               <div class="product-ver">POCAALBUM</div>
               <div class="product-edition">SET</div>
@@ -1931,7 +1939,7 @@
         <div class="compare-product-side">
           <div class="compare-product-img is-random">
             <span class="product-num">07</span>
-            <div class="product-album"><img src="promo-images/digiunit.png" alt="DIGIPACK UNIT VER."></div>
+            <div class="product-album"><span class="album-frame"><img src="promo-images/digiunit.png" alt="DIGIPACK UNIT VER."></span></div>
             <div class="product-meta">
               <div class="product-ver">DIGIPACK UNIT VER.</div>
               <div class="product-edition">RANDOM</div>
@@ -1952,7 +1960,7 @@
         <div class="compare-product-side">
           <div class="compare-product-img">
             <span class="product-num">08</span>
-            <div class="product-album"><img src="promo-images/digiunit.png" alt="DIGIPACK UNIT VER."><span class="album-set-badge">SET</span></div>
+            <div class="product-album"><span class="album-frame"><img src="promo-images/digiunit.png" alt="DIGIPACK UNIT VER."><span class="album-set-badge">SET</span></span></div>
             <div class="product-meta">
               <div class="product-ver">DIGIPACK UNIT VER.</div>
               <div class="product-edition">SET</div>
