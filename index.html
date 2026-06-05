@@ -490,6 +490,19 @@
     /* desktop: normal-flow inside .trailer-content-row (not absolute) */
     .pc-desktop {
       position: relative;
+      pointer-events: none;            /* 영상 위에 겹쳐도 컨트롤 클릭을 막지 않음 */
+      transition: opacity 0.45s ease;
+    }
+    /* 영상 재생 중 데스크탑 카드 fade-out (일시정지/종료 시 다시 fade-in) */
+    .photocards-fan.cards-hidden { opacity: 0; }
+
+    /* IFrame Player API가 생성하는 iframe이 영상 영역을 꽉 채우도록 */
+    #trailerVideo iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
     }
 
     /* mobile: absolutely positioned at bottom-centre of trailer */
@@ -2138,26 +2151,60 @@
       fans.forEach(f => io.observe(f));
     })();
 
-    /* ===== YouTube 인라인 재생 (썸네일 클릭/엔터 → iframe 임베드) ===== */
+    /* ===== YouTube 인라인 재생 (IFrame Player API) =====
+       재생 시 데스크탑 카드 fade-out, 일시정지/종료 시 fade-in
+       (카드가 영상 컨트롤 위에 겹쳐 클릭을 막던 문제 해결) */
     (function () {
       const tv = document.getElementById('trailerVideo');
       if (!tv) return;
+
+      let apiLoading = false, apiReady = false;
+      const queue = [];
+      function loadApi(cb) {
+        if (apiReady) { cb(); return; }
+        queue.push(cb);
+        if (apiLoading) return;
+        apiLoading = true;
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+        window.onYouTubeIframeAPIReady = function () {
+          apiReady = true;
+          queue.splice(0).forEach(function (fn) { fn(); });
+        };
+      }
+
+      function setCardsHidden(hidden) {
+        const fan = document.querySelector('.pc-desktop');
+        if (fan) fan.classList.toggle('cards-hidden', hidden);
+      }
+
       function play() {
         if (tv.dataset.playing) return;
         tv.dataset.playing = '1';
-        const id = tv.dataset.yt;
-        const iframe = document.createElement('iframe');
-        iframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1';
-        iframe.title = 'ATEEZ GOLDEN HOUR Part.5';
-        iframe.setAttribute('frameborder', '0');
-        iframe.allow = 'autoplay; encrypted-media; picture-in-picture; web-share; fullscreen';
-        iframe.allowFullscreen = true;
-        iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;';
+        setCardsHidden(true);                 // 클릭 즉시 카드 fade-out
+        const holder = document.createElement('div');
+        holder.id = 'ytPlayerInner';
         tv.innerHTML = '';
-        tv.appendChild(iframe);
+        tv.appendChild(holder);
+        loadApi(function () {
+          new YT.Player('ytPlayerInner', {
+            width: '100%', height: '100%',
+            videoId: tv.dataset.yt,
+            playerVars: { autoplay: 1, rel: 0, playsinline: 1 },
+            events: {
+              onStateChange: function (e) {
+                // 1=playing → fade-out / 2=paused, 0=ended → fade-in
+                if (e.data === 1) setCardsHidden(true);
+                else if (e.data === 2 || e.data === 0) setCardsHidden(false);
+              }
+            }
+          });
+        });
       }
+
       tv.addEventListener('click', play);
-      tv.addEventListener('keydown', e => {
+      tv.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); }
       });
     })();
