@@ -32,7 +32,8 @@
       font-family: var(--font-body);
       background: var(--white);
       color: var(--dark);
-      overflow-x: hidden;
+      overflow-x: hidden;        /* 내부 bleed(ticker/트레일러) 클립 */
+      min-width: 320px;          /* 레이아웃이 320px 미만으로 줄어들지 않음 */
       max-width: 1440px;
       margin: 0 auto;
       box-shadow: inset 0 0 0 1px var(--black); /* 컨테이너 외곽 border */
@@ -1495,18 +1496,19 @@
 
         <!-- video + desktop cards: flex row, cards overlap video via mr-[-220px] -->
         <div class="trailer-content-row">
-          <!-- YouTube thumbnail — click opens in new tab (no iframe = no Error 153) -->
-          <a href="https://youtu.be/j6C_m0elFfI" target="_blank" rel="noopener" class="trailer-video">
-            <img
+          <!-- YouTube 인라인 재생: 썸네일 클릭 시 iframe으로 교체되어 페이지 내에서 재생 -->
+          <div class="trailer-video" id="trailerVideo" role="button" tabindex="0" aria-label="Play ATEEZ GOLDEN HOUR Part.5 trailer"
+               data-yt="j6C_m0elFfI">
+            <img class="tv-thumb"
               src="https://img.youtube.com/vi/j6C_m0elFfI/maxresdefault.jpg"
               alt="ATEEZ GOLDEN HOUR Part.5"
               style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
-            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.15);">
+            <div class="tv-play" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.15);">
               <div style="width:68px;height:48px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;">
                 <svg viewBox="0 0 24 24" fill="white" width="28" height="28"><path d="M8 5v14l11-7z"/></svg>
               </div>
             </div>
-          </a>
+          </div>
 
           <!-- ▸ Desktop photocards — 피그마 17:6804 구조 정확 반영 -->
           <div class="photocards-fan pc-desktop" style="align-items:center;justify-content:center;">
@@ -2117,17 +2119,48 @@
     updateCountdown();
     setInterval(updateCountdown, 1000);
 
-    /* ===== Photocard fan-out animation ===== */
-    window.addEventListener('load', () => {
-      // Small delay so the user sees the "bunched" state first
-      setTimeout(() => {
-        document.querySelectorAll('.photocards-fan').forEach(fan => {
-          fan.classList.add('fans-open');
+    /* ===== Photocard fan-out: 화면에 들어올 때 펼침 (모바일에서 스크롤 시 바로 보임) ===== */
+    (function () {
+      const fans = document.querySelectorAll('.photocards-fan');
+      if (!fans.length) return;
+      if (!('IntersectionObserver' in window)) {
+        fans.forEach(f => f.classList.add('fans-open'));
+        return;
+      }
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('fans-open');
+            io.unobserve(e.target);          // 한 번만 펼침
+          }
         });
-      }, 500);
-    });
+      }, { threshold: 0.35 });
+      fans.forEach(f => io.observe(f));
+    })();
 
-    /* YouTube opens in new tab via <a> tag — no iframe needed */
+    /* ===== YouTube 인라인 재생 (썸네일 클릭/엔터 → iframe 임베드) ===== */
+    (function () {
+      const tv = document.getElementById('trailerVideo');
+      if (!tv) return;
+      function play() {
+        if (tv.dataset.playing) return;
+        tv.dataset.playing = '1';
+        const id = tv.dataset.yt;
+        const iframe = document.createElement('iframe');
+        iframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1';
+        iframe.title = 'ATEEZ GOLDEN HOUR Part.5';
+        iframe.setAttribute('frameborder', '0');
+        iframe.allow = 'autoplay; encrypted-media; picture-in-picture; web-share; fullscreen';
+        iframe.allowFullscreen = true;
+        iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;';
+        tv.innerHTML = '';
+        tv.appendChild(iframe);
+      }
+      tv.addEventListener('click', play);
+      tv.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); }
+      });
+    })();
 
     /* ===== FAQ Accordion ===== */
     function toggleFaq(questionEl) {
