@@ -1307,6 +1307,8 @@
       .go-btn-mobile { display: flex; }
 
       /* Compare mobile: 피그마 20:2653 — 로고 상단, 텍스트 하단 */
+      .compare { padding-bottom: 0; }   /* 모바일: 섹션 하단 마진 제거 */
+
       .compare-header {
         width: 100%;
         margin: 0;                  /* 데스크탑 전용 16px 간격 해제 (모바일은 padding으로 처리) */
@@ -1403,6 +1405,11 @@
         grid-template-columns: repeat(2, 1fr);
         margin: 0 40px;
       }
+
+      /* 타블렛(2열): 데스크탑용 고정 height(336/240)는 행 구성이 달라져 깨짐 →
+         min-height + grid stretch로 같은 행의 두 칸 높이를 동일하게 맞춤 */
+      .compare-item { height: auto; min-height: 240px; }
+      .compare-item:nth-child(-n+3) { height: auto; }
 
       .lineup-header { padding: 32px 40px 16px; width: calc(100% - 80px); }
       .lineup-list { width: calc(100% - 80px); }
